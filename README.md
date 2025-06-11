@@ -27,8 +27,8 @@ Resume Radar is an AI-powered web application that provides detailed, actionable
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/resume-radar.git
-   cd resume-radar
+   git clone https://github.com/piverine/Resume-Radar.git
+   cd Resume-Radar
    ```
 
 2. **Create and activate a virtual environment**
