@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Radar - Get AI-Powered Resume Feedback</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      }
+      .upload-area {
+        transition: all 0.3s ease;
+      }
+      .upload-area:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .upload-area.dragover {
+        @apply border-purple-500 bg-purple-50;
+        transform: scale(1.01);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-gray-50">
+    <div class="gradient-bg min-h-screen flex flex-col">
+      <!-- Header -->
+      <header class="container mx-auto px-6 py-8">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-white">Resume Radar</h1>
+          <a href="#how-it-works" class="text-white hover:text-purple-200 transition-colors">How It Works</a>
+        </div>
+      </header>
+
+      <!-- Hero Section -->
+      <main class="flex-grow flex items-center">
+        <div class="container mx-auto px-6 py-12">
+          <div class="max-w-3xl mx-auto text-center mb-12">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 animate__animated animate__fadeIn">
+              Get Honest, AI-Powered<br>Resume Feedback in Seconds
+            </h2>
+            <p class="text-xl text-purple-100 mb-8">
+              Upload your resume and receive detailed, constructive feedback to help you land more interviews.
+            </p>
+          </div>
+
+          <!-- Upload Card -->
+          <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
+            <div class="p-8">
+              <form
+                action="{{ url_for('upload_resume') }}"
+                method="POST"
+                enctype="multipart/form-data"
+                class="space-y-6"
+              >
+                <!-- Upload Box -->
+                <label
+                  for="fileInput"
+                  class="upload-area block w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:border-purple-400 transition-all duration-200"
+                  id="dropArea"
+                >
+                  <svg
+                    class="w-12 h-12 text-purple-500 mb-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    ></path>
+                  </svg>
+                  <span id="fileLabelText" class="text-lg font-medium">Drag & drop your resume here</span>
+                  <span class="text-sm text-gray-400 mt-1">or click to browse (PDF only, max 5MB)</span>
+                </label>
+                
+                <!-- Hidden File Input -->
+                <input id="fileInput" type="file" name="file" accept=".pdf" class="hidden" />
+
+                <!-- Upload Button -->
+                <button
+                  type="submit"
+                  id="submitBtn"
+                  class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:opacity-90 transition-all duration-200 flex items-center justify-center space-x-2"
+                  disabled
+                >
+                  <span>Get Feedback</span>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- How It Works Section -->
+      <section id="how-it-works" class="py-16 bg-white">
+        <div class="container mx-auto px-6">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">How It Works</h2>
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center p-6 rounded-xl bg-gray-50 hover:shadow-lg transition-shadow">
+              <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-purple-600">1</span>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">Upload Your Resume</h3>
+              <p class="text-gray-600">Upload your resume in PDF format with just a few clicks.</p>
+            </div>
+            <div class="text-center p-6 rounded-xl bg-gray-50 hover:shadow-lg transition-shadow">
+              <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-purple-600">2</span>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">AI Analysis</h3>
+              <p class="text-gray-600">Our AI analyzes your resume for key strengths and areas of improvement.</p>
+            </div>
+            <div class="text-center p-6 rounded-xl bg-gray-50 hover:shadow-lg transition-shadow">
+              <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-purple-600">3</span>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">Get Feedback</h3>
+              <p class="text-gray-600">Receive detailed, actionable feedback to improve your resume.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+          <p>&copy; 2025 RoastMyResume. All rights reserved.</p>
+          <p class="text-gray-400 text-sm mt-2">Made with ❤️ for job seekers</p>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const fileInput = document.getElementById("fileInput");
+      const dropArea = document.getElementById("dropArea");
+      const fileLabelText = document.getElementById("fileLabelText");
+      const submitBtn = document.getElementById("submitBtn");
+
+      // Handle file selection via click
+      dropArea.addEventListener("click", () => fileInput.click());
+
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+          const fileName = e.target.files[0].name;
+          fileLabelText.textContent = fileName;
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          submitBtn.classList.add("hover:opacity-90");
+        }
+      });
+
+      // Drag and drop handlers
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+      });
+
+      function highlight() {
+        dropArea.classList.add('dragover');
+      }
+
+      function unhighlight() {
+        dropArea.classList.remove('dragover');
+      }
+
+      dropArea.addEventListener('drop', handleDrop, false);
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+          fileInput.files = files;
+          const fileName = files[0].name;
+          fileLabelText.textContent = fileName;
+          submitBtn.disabled = false;
+          submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+          submitBtn.classList.add("hover:opacity-90");
+        }
+      }
+
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

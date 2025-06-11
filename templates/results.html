@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Resume Feedback - Resume Radar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      }
+      .progress-bar {
+        height: 20px;
+        background-color: #e5e7eb;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s ease-in-out;
+      }
+      .section-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+      }
+      .section-header {
+        padding: 1rem;
+        background-color: #f9fafb;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .section-content {
+        padding: 0 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
+      }
+      .section-content.expanded {
+        padding: 1rem;
+        max-height: 1000px;
+      }
+      .keyword {
+        display: inline-block;
+        margin: 2px;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+      }
+      .present-keyword {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+      .missing-keyword {
+        background-color: #fee2e2;
+        color: #991b1b;
+        text-decoration: line-through;
+      }
+      .feedback-container {
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #c4b5fd;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a78bfa;
+      }
+      .copy-btn {
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+      }
+      pre:hover .copy-btn {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-gray-50">
+    <div class="gradient-bg min-h-screen flex flex-col">
+      <!-- Header -->
+      <header class="container mx-auto px-6 py-8">
+        <div class="flex justify-between items-center">
+          <h1 class="text-3xl font-bold text-white">Resume Radar</h1>
+          <a href="{{ url_for('index') }}" class="text-white hover:text-purple-200 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Home
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="flex-grow py-8">
+        <div class="container mx-auto px-6">
+          <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Header Card -->
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 class="text-2xl font-bold">Your Resume Analysis</h2>
+                  <p class="text-purple-100 mt-1">Detailed feedback to improve your resume</p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                  <button 
+                    id="copyAllBtn"
+                    class="px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-all flex items-center space-x-2"
+                  >
+                    <i class="far fa-copy"></i>
+                    <span>Copy Feedback</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Overall Score -->
+            <div class="p-6 border-b">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div class="mb-4 md:mb-0">
+                  <h3 class="text-xl font-bold text-gray-800">Overall Score</h3>
+                  <p class="text-gray-600">How your resume stacks up</p>
+                </div>
+                <div class="text-center">
+                  <div class="text-4xl font-bold text-purple-600">{{ feedback.overall_score | default('0') }}/100</div>
+                  <div class="progress-bar w-48 mx-auto">
+                    <div class="progress-fill bg-gradient-to-r from-purple-500 to-indigo-600" 
+                         style="width: {{ feedback.overall_score | default(0) }}%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ATS Compatibility -->
+            <div class="p-6 border-b bg-gray-50">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">ATS Compatibility</h3>
+              <div class="mb-4">
+                <div class="flex justify-between mb-1">
+                  <span class="text-sm font-medium text-gray-700">Score: {{ feedback.ats_compatibility.score | default(0) }}/100</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill bg-gradient-to-r from-blue-500 to-cyan-400" 
+                       style="width: {{ feedback.ats_compatibility.score | default(0) }}%"></div>
+                </div>
+              </div>
+              
+              {% if feedback.ats_compatibility.issues and feedback.ats_compatibility.issues | length > 0 %}
+              <div class="mt-4 p-4 bg-red-50 rounded-lg">
+                <h4 class="font-medium text-red-800 mb-2">Potential Issues:</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                  {% for issue in feedback.ats_compatibility.issues %}
+                  <li class="text-red-700">{{ issue }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+              
+              {% if feedback.ats_compatibility.suggestions and feedback.ats_compatibility.suggestions | length > 0 %}
+              <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                <h4 class="font-medium text-blue-800 mb-2">Suggestions for Improvement:</h4>
+                <ul class="list-disc pl-5 space-y-1">
+                  {% for suggestion in feedback.ats_compatibility.suggestions %}
+                  <li class="text-blue-700">{{ suggestion }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Sections Feedback -->
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">Detailed Feedback</h3>
+              <div class="space-y-4">
+                {% for section in feedback.sections | default([]) %}
+                <div class="section-card">
+                  <div class="section-header" onclick="toggleSection('section-{{ loop.index }}')">
+                    <div>
+                      <h4 class="text-lg font-semibold">{{ section.name }}</h4>
+                      <div class="flex items-center mt-1">
+                        <span class="text-sm font-medium mr-2">Score: {{ section.score | default(0) }}/100</span>
+                        <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          {% if section.score is defined and section.score is not none %}
+                          <div class="h-full bg-gradient-to-r 
+                                    {% if section.score >= 70 %}from-green-500 to-green-400
+                                    {% elif section.score >= 40 %}from-yellow-500 to-yellow-400
+                                    {% else %}from-red-500 to-red-400{% endif %}" 
+                               style="width: {{ section.score | default(0) }}%"
+                          ></div>
+                          {% else %}
+                          <div class="h-full bg-gradient-to-r from-gray-300 to-gray-400" style="width: 0%"></div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                    <i class="fas fa-chevron-down" id="arrow-section-{{ loop.index }}"></i>
+                  </div>
+                  
+                  <div class="section-content" id="section-{{ loop.index }}">
+                    <div class="border-t border-gray-100 pt-4">
+                      <!-- Strengths -->
+                      {% if section.strengths %}
+                      <div class="mb-4">
+                        <h5 class="font-medium text-green-700 mb-2">
+                          <i class="fas fa-check-circle mr-1"></i> Strengths
+                        </h5>
+                        <ul class="list-disc pl-5 space-y-1">
+                          {% for strength in section.strengths %}
+                          <li class="text-gray-700">{{ strength }}</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                      {% endif %}
+                      
+                      <!-- Improvements -->
+                      {% if section.improvements %}
+                      <div class="mb-4">
+                        <h5 class="font-medium text-red-700 mb-2">
+                          <i class="fas fa-tools mr-1"></i> Areas for Improvement
+                        </h5>
+                        <ul class="list-disc pl-5 space-y-1">
+                          {% for improvement in section.improvements %}
+                          <li class="text-gray-700">{{ improvement }}</li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                      {% endif %}
+                      
+                      <!-- Keywords -->
+                      {% if section.keywords and (section.keywords.present or section.keywords.missing) %}
+                      <div class="mt-4">
+                        <h5 class="font-medium text-gray-800 mb-2">
+                          <i class="fas fa-key mr-1"></i> Keywords Analysis
+                        </h5>
+                        
+                        {% if section.keywords.present %}
+                        <div class="mb-3">
+                          <span class="text-sm font-medium text-gray-700">Included Keywords:</span>
+                          <div class="mt-2 flex flex-wrap gap-2">
+                            {% for keyword in section.keywords.present %}
+                            <span class="keyword present-keyword">{{ keyword }}</span>
+                            {% endfor %}
+                          </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if section.keywords.missing %}
+                        <div>
+                          <span class="text-sm font-medium text-gray-700">Missing Keywords:</span>
+                          <div class="mt-2 flex flex-wrap gap-2">
+                            {% for keyword in section.keywords.missing %}
+                            <span class="keyword missing-keyword">{{ keyword }}</span>
+                            {% endfor %}
+                          </div>
+                        </div>
+                        {% endif %}
+                      </div>
+                      {% endif %}
+                      
+                      <!-- ATS Compatibility -->
+                      <div class="mt-4 pt-4 border-t border-gray-100">
+                        <div class="flex items-center">
+                          <span class="text-sm font-medium text-gray-700 mr-2">ATS Friendly:</span>
+                          {% if section.ats_compatibility %}
+                          <span class="text-green-600 font-medium"><i class="fas fa-check-circle"></i> Yes</span>
+                          {% else %}
+                          <span class="text-red-600 font-medium"><i class="fas fa-times-circle"></i> Needs Improvement</span>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Summary -->
+            {% if feedback.summary %}
+            <div class="p-6 bg-gray-50 border-t">
+              <h3 class="text-xl font-bold text-gray-800 mb-4">Overall Summary</h3>
+              <div class="bg-white p-6 rounded-lg shadow-sm">
+                <p class="text-gray-700 leading-relaxed">{{ feedback.summary }}</p>
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            <div class="p-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+              <a 
+                href="{{ url_for('index') }}" 
+                class="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors text-center"
+              >
+                <i class="fas fa-upload mr-2"></i>Upload Another Resume
+              </a>
+              <div class="flex space-x-4">
+                <button 
+                  id="printBtn"
+                  class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center"
+                >
+                  <i class="fas fa-print mr-2"></i>
+                  <span>Print</span>
+                </button>
+                <button 
+                  id="downloadBtn"
+                  class="px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center"
+                >
+                  <i class="fas fa-file-download mr-2"></i>
+                  <span>Download as PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="bg-gray-900 text-white py-6">
+        <div class="container mx-auto px-6 text-center">
+          <p>&copy; 2025 Resume Radar. All rights reserved.</p>
+          <p class="text-gray-400 text-sm mt-2">Made with ❤️ for job seekers</p>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // Toggle section expansion
+      function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        const arrow = document.getElementById(`arrow-${sectionId}`);
+        
+        section.classList.toggle('expanded');
+        arrow.classList.toggle('rotate-180');
+      }
+
+      // Copy all feedback to clipboard
+      document.getElementById('copyAllBtn').addEventListener('click', async () => {
+        try {
+          // Create a temporary element to hold all the text
+          const temp = document.createElement('div');
+          
+          // Add overall score
+          temp.innerHTML = `RESUME FEEDBACK\n`;
+          temp.innerHTML += `================\n\n`;
+          temp.innerHTML += `Overall Score: ${document.querySelector('.text-4xl').textContent}\n\n`;
+          
+          // Add ATS compatibility
+          const atsScore = document.querySelector('.progress-bar .progress-fill').style.width;
+          temp.innerHTML += `ATS Compatibility: ${atsScore}\n`;
+          
+          // Add summary if available
+          const summary = document.querySelector('.prose');
+          if (summary) {
+            temp.innerHTML += `\nSUMMARY:\n`;
+            temp.innerHTML += `${summary.innerText}\n\n`;
+          }
+          
+          // Add section feedback
+          temp.innerHTML += `\nDETAILED FEEDBACK:\n`;
+          temp.innerHTML += `==================\n\n`;
+          
+          const sections = document.querySelectorAll('.section-card');
+          sections.forEach((section, index) => {
+            const sectionName = section.querySelector('h4').textContent;
+            const sectionScore = section.querySelector('.text-sm').textContent;
+            
+            temp.innerHTML += `${sectionName} (${sectionScore})\n`;
+            temp.innerHTML += `${'='.repeat(sectionName.length + sectionScore.length + 4)}\n`;
+            
+            // Add strengths
+            const strengths = section.querySelectorAll('h5:first-of-type + ul li');
+            if (strengths.length > 0) {
+              temp.innerHTML += '\nSTRENGTHS:\n';
+              strengths.forEach(strength => {
+                temp.innerHTML += `• ${strength.textContent}\n`;
+              });
+            }
+            
+            // Add improvements
+            const improvements = section.querySelectorAll('h5:last-of-type + ul li');
+            if (improvements.length > 0) {
+              temp.innerHTML += '\nAREAS FOR IMPROVEMENT:\n';
+              improvements.forEach(improvement => {
+                temp.innerHTML += `• ${improvement.textContent}\n`;
+              });
+            }
+            
+            // Add keywords if available
+            const keywordsSection = section.querySelector('.keyword');
+            if (keywordsSection) {
+              temp.innerHTML += '\nKEYWORDS:\n';
+              const presentKeywords = section.querySelectorAll('.present-keyword');
+              if (presentKeywords.length > 0) {
+                temp.innerHTML += 'Included: ';
+                presentKeywords.forEach((kw, i) => {
+                  temp.innerHTML += kw.textContent;
+                  if (i < presentKeywords.length - 1) temp.innerHTML += ', ';
+                });
+                temp.innerHTML += '\n';
+              }
+              
+              const missingKeywords = section.querySelectorAll('.missing-keyword');
+              if (missingKeywords.length > 0) {
+                temp.innerHTML += 'Missing: ';
+                missingKeywords.forEach((kw, i) => {
+                  temp.innerHTML += kw.textContent;
+                  if (i < missingKeywords.length - 1) temp.innerHTML += ', ';
+                });
+                temp.innerHTML += '\n';
+              }
+            }
+            
+            temp.innerHTML += '\n';
+          });
+          
+          // Copy to clipboard
+          await navigator.clipboard.writeText(temp.innerText);
+          
+          // Update button text
+          const copyBtn = document.getElementById('copyAllBtn');
+          const originalText = copyBtn.innerHTML;
+          copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+          
+          // Reset button text after 2 seconds
+          setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+          }, 2000);
+          
+        } catch (err) {
+          console.error('Failed to copy feedback: ', err);
+          alert('Failed to copy feedback to clipboard. Please try again.');
+        }
+      });
+
+      // Print functionality
+      document.getElementById('printBtn').addEventListener('click', () => {
+        window.print();
+      });
+
+      // Download as PDF functionality (placeholder)
+      document.getElementById('downloadBtn').addEventListener('click', () => {
+        alert('PDF download functionality will be implemented soon!');
+        // In a real implementation, you would use a library like jsPDF or html2pdf
+        // to convert the feedback content to a downloadable PDF
+      });
+
+      // Initialize all sections as collapsed
+      document.addEventListener('DOMContentLoaded', () => {
+        // Auto-expand the first section
+        const firstSection = document.querySelector('.section-content');
+        if (firstSection) {
+          firstSection.classList.add('expanded');
+        }
+      });
+    </script>
+  </body>
+</html>
