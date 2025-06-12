@@ -50,6 +50,8 @@ def get_response(text):
     3. Make sure all strings are properly escaped
     4. Ensure all brackets and quotes are properly closed
     5. Do not include any comments in the JSON
+    6. Do not include any extra text outside the JSON object
+    7. For the overall summary roast the resume brutally don't hold back
     
     Be brutally honest and specific in your feedback. Focus on actionable improvements.
     Here's the resume text:
